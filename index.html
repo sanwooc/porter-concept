@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Porter — Create</title>
+<link href="https://fonts.cdnfonts.com/css/general-sans" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/*
+  VERCEL DARK MODE SYSTEM — extracted from vercel.com dark UI:
+  Page bg:    #000
+  Card bg:    #111
+  Input bg:   #0a0a0a  (slightly darker than card)
+  Border:     #333      (solid, no alpha)
+  Text-1:     #ededed   (primary)
+  Text-2:     #888      (secondary)
+  Text-3:     #555      (tertiary/placeholder)
+  White btn:  #fff bg, #000 text
+  Yellow btn: #ffea4b bg, #000 text  (Porter's one accent)
+  Green:      #00d3bb  (success only — Ready / live)
+*/
+:root {
+  --bg:    #000000;
+  --card:  #111111;
+  --input: #0a0a0a;
+  --b:     #2a2a2a;   /* border — solid, visible */
+  --b2:    #333333;   /* slightly brighter border for inputs */
+
+  --t1: #ededed;   /* primary text */
+  --t2: #888888;   /* secondary */
+  --t3: #555555;   /* tertiary */
+
+  --yellow: #ffea4b;
+  --green:  #00d3bb;
+
+  --font: 'General Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: ui-monospace, 'SF Mono', 'Fira Code', monospace;
+
+  font-size: 14px;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--t1);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px 20px 60px;
+  /* Subtle colored gradient like Porter screenshot — very faint */
+  background-image:
+    radial-gradient(ellipse 55% 38% at 12% 88%, rgba(160,30,20,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 32% at 88% 88%, rgba(140,110,10,0.18) 0%, transparent 50%);
+}
+
+/* ── Modal card ── */
+.modal {
+  width: 100%;
+  max-width: 1020px;
+  background: var(--card);
+  border: 1px solid var(--b);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── Topbar ── */
+.topbar {
+  height: 52px;
+  border-bottom: 1px solid var(--b);
+  display: flex; align-items: center;
+  padding: 0 24px;
+}
+.bc {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--t2);
+}
+.bc-sep { color: var(--t3); }
+.bc-cur { color: var(--t1); font-weight: 500; }
+.topbar-r { margin-left: auto; }
+.v2-wrap { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--t2); }
+/* Toggle — Porter yellow */
+.toggle {
+  width: 36px; height: 20px;
+  background: var(--yellow);
+  border-radius: 10px; position: relative; flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; position: absolute; right: 3px; top: 3px;
+  width: 14px; height: 14px;
+  border-radius: 50%; background: #111;
+}
+
+/* ── Content ── */
+.content { padding: 28px 28px 36px; }
+
+/* Section */
+.sec-title { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 5px; }
+.sec-sub   { font-size: 13px; color: var(--t2); margin-bottom: 20px; line-height: 1.5; }
+.link      { color: var(--t1); text-decoration: underline; text-underline-offset: 2px; }
+.hr        { border: none; border-top: 1px solid var(--b); margin: 24px 0; }
+
+/* ── 3-col form ── */
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.fg   { display: flex; flex-direction: column; gap: 6px; }
+.lbl  { font-size: 12px; font-weight: 500; color: var(--t2); }
+.sel  {
+  height: 38px;
+  background: var(--input);
+  border: 1px solid var(--b2);
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 13px; color: var(--t1); font-family: var(--font);
+  display: flex; align-items: center; gap: 8px; cursor: default;
+}
+.sel:hover { border-color: #555; }
+.si  { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.sv  { flex: 1; }
+.sc  { color: var(--t3); font-size: 10px; }
+
+/* Auto-detect banner — yellow-light tint to signal importance */
+.banner {
+  background: rgba(255,234,75,0.05);
+  border: 1px solid rgba(255,234,75,0.18);
+  border-radius: 7px; padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-bottom: 14px; margin-top: 20px;
+}
+.bico { width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; fill: none; stroke: var(--yellow); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.btxt { font-size: 13px; color: var(--t1); line-height: 1.55; }
+.blnk { color: var(--t1); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── App cards ── */
+.cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.card  {
+  background: var(--input);
+  border: 1px solid var(--b2);
+  border-radius: 8px; overflow: hidden;
+}
+.card-top {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 14px; border-bottom: 1px solid var(--b);
+}
+
+/* Badges — Vercel style: just an initial on a slightly tinted circle */
+.bdg {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; flex-shrink: 0;
+  border: 1px solid var(--b2);
+}
+.bdg-f { background: rgba(0,211,187,0.12); color: var(--green); }
+.bdg-n { background: rgba(255,255,255,0.06); color: var(--t2); }
+
+.aname { font-size: 13px; font-weight: 500; color: var(--t1); }
+.tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--b);
+  border-radius: 5px; padding: 2px 8px;
+  font-size: 11.5px; font-family: var(--mono); color: var(--t2);
+}
+.ti { width: 9px; height: 9px; color: var(--t3); flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Ready — yellow, consistent with brand accent */
+.rdy {
+  margin-left: auto; display: flex; align-items: center; gap: 5px;
+  font-size: 12.5px; color: var(--yellow); font-weight: 500;
+}
+.abtns { display: flex; gap: 5px; margin-left: 8px; }
+.ab {
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--b);
+  border-radius: 5px; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--t3); cursor: default;
+}
+.ab:hover { border-color: #555; color: var(--t2); }
+
+.card-body { display: grid; grid-template-columns: 1fr 160px; gap: 14px; padding: 12px 14px 14px; }
+.af  { display: flex; flex-direction: column; gap: 5px; }
+.afl { font-size: 11.5px; color: var(--t2); font-weight: 500; }
+.afv {
+  background: var(--card); border: 1px solid var(--b);
+  border-radius: 6px; padding: 8px 10px;
+  font-size: 12.5px; font-family: var(--mono); color: var(--t1);
+}
+
+.addapp {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--t2); margin-bottom: 26px; cursor: default;
+}
+.addapp:hover { color: var(--t1); }
+
+/* ── Buttons ── */
+/* Vercel-style secondary: white bg, black text, sharp border */
+.btn-white {
+  display: inline-flex; align-items: center;
+  padding: 8px 16px; background: #fff; border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 13px; font-weight: 500; color: #000;
+  cursor: default; font-family: var(--font);
+}
+
+/* Porter primary: yellow, black text */
+.btn-yellow {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; background: var(--yellow); border-radius: 6px;
+  font-size: 13.5px; font-weight: 600; color: #000;
+  cursor: default; font-family: var(--font);
+  transition: background 120ms ease, transform 80ms ease;
+}
+.btn-yellow:hover {
+  background: #fff176;
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════
+   DEPLOYMENT SECTION
+══════════════════════════════ */
+.dsec { margin-top: 24px; padding-top: 0; }
+.dtitle { font-size: 16px; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
+.dsub   { font-size: 13px; color: var(--t3); margin-bottom: 20px; }
+
+.dpanel {
+  background: var(--bg);
+  border: 1px solid var(--b2);
+  border-radius: 8px; overflow: hidden;
+}
+
+/* 4 steps */
+.steps { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--b); }
+.step {
+  padding: 18px 0 14px; display: flex; flex-direction: column; align-items: center; gap: 9px;
+  border-right: 1px solid var(--b); transition: opacity 280ms;
+}
+.step:last-child { border-right: none; }
+.step.w { opacity: 0.25; }
+.step.r, .step.d { opacity: 1; }
+
+.ico { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+.ico svg { width: 50px; height: 50px; display: block; }
+
+.slbl { font-size: 12px; font-family: var(--mono); color: var(--t2); }
+.step.r .slbl, .step.d .slbl { color: var(--t1); }
+
+/* Vercel-style status pills: tight, no color noise */
+.spill { font-size: 10.5px; padding: 2px 9px; border-radius: 4px; font-weight: 500; font-family: var(--mono); border: 1px solid; }
+.pw { background: transparent; border-color: var(--b2); color: var(--t3); }
+/* running — yellow tint pill */
+.pr { background: rgba(255,234,75,0.08); border-color: rgba(255,234,75,0.25); color: #b8a100; }
+/* done — green */
+.pd { background: rgba(0,211,187,0.08); border-color: rgba(0,211,187,0.25); color: var(--green); }
+
+/* Progress — yellow */
+.ptrack { height: 1px; background: var(--b); }
+.pfill  { height: 100%; background: var(--yellow); width: 22%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+
+/* Log — Vercel terminal style */
+.log {
+  padding: 14px 18px 16px; font-family: var(--mono);
+  font-size: 12px; color: var(--t2); line-height: 1.8; min-height: 96px;
+}
+.logr { display: flex; gap: 12px; align-items: baseline; }
+.logt { color: var(--t3); flex-shrink: 0; font-size: 11px; }
+.logb {
+  flex-shrink: 0; padding: 0 5px; border-radius: 3px;
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  border: 1px solid var(--b2); color: var(--t3);
+}
+.logm { color: var(--t2); }
+
+.cur {
+  display: inline-block; width: 7px; height: 13px;
+  background: var(--t2); vertical-align: text-bottom; margin-left: 2px;
+  animation: blink 1.1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── CONNECT animation (SVG CSS) ── */
+.connect .cube-left  { fill: rgba(255,255,255,0.22); }
+.connect .cube-right { fill: rgba(255,255,255,0.22); animation: connectCube 2.4s infinite; }
+.connect .dot {
+  fill: #ffea4b; opacity: 0;
+  transform-box: fill-box; transform-origin: center;
+  animation: connectDot 2.4s infinite;
+}
+.connect .dot-1 { animation-delay: 0s; }
+.connect .dot-2 { animation-delay: 0.28s; }
+.connect .dot-3 { animation-delay: 0.56s; }
+.connect .dot-4 { animation-delay: 0.84s; }
+@keyframes connectDot {
+  0%, 12%  { opacity: 0; transform: scale(0.45); }
+  20%, 76% { opacity: 1; transform: scale(1); }
+  100%     { opacity: 0; transform: scale(1); }
+}
+@keyframes connectCube {
+  0%, 49%  { fill: rgba(255,255,255,0.22); }
+  50%, 76% { fill: #ffea4b; }
+  100%     { fill: rgba(255,255,255,0.22); }
+}
+
+/* ── DETECT animation (SVG CSS) ── */
+.detect-grid path {
+  fill: rgba(255,255,255,0.18);
+  transition: fill 110ms linear;
+  transform-box: fill-box; transform-origin: center;
+}
+.detect-grid path.on    { fill: #ffea4b; }
+.detect-grid path.flash { fill: #ffea4b; transform: scale(1.02); }
+
+/* ── DEPLOY animation (SVG CSS) ── */
+.deploy-grid path {
+  fill: rgba(255,255,255,0.18);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 220ms ease, transform 220ms ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.deploy-grid path.on {
+  opacity: 1;
+  transform: scale(1);
+  fill: #ffea4b;
+}
+/* center the deploy animation in the panel */
+.deploy-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 0 20px;
+  border-bottom: 1px solid var(--b);
+}
+.deploy-center svg {
+  width: 84px;
+  height: 84px;
+}
+</style>
+</head>
+<body>
+
+<div class="modal">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="bc">
+      <span>Applications</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-cur">Create</span>
+    </div>
+    <div class="topbar-r">
+      <div class="v2-wrap">
+        <div class="toggle"></div>
+        <span>Enable V2 create flow</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- CONNECT ANIMATION -->
+    <svg class="connect" viewBox="0 0 50 50" width="50" height="50" style="display:block;margin-bottom:18px;" aria-hidden="true">
+      <path class="cube-left"  d="M0,20v10h10v-10H0ZM6.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path class="cube-right" d="M40,20v10h10v-10h-10ZM46.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+      <circle class="dot dot-1" cx="16.93" cy="25" r="1.25"/>
+      <circle class="dot dot-2" cx="22.27" cy="25" r="1.25"/>
+      <circle class="dot dot-3" cx="27.62" cy="25" r="1.25"/>
+      <circle class="dot dot-4" cx="33.07" cy="25" r="1.25"/>
+    </svg>
+
+    <div class="sec-title">Deploy from a GitHub repository</div>
+    <div class="sec-sub">Choose a connected repository to deploy from, or <span class="link">link more repositories ↗</span></div>
+
+    <div class="row3">
+      <div class="fg">
+        <div class="lbl">Organization</div>
+        <div class="sel">
+          <svg class="si" viewBox="0 0 16 16"><path d="M8 1L1 5l7 4 7-4-7-4z"/><path d="M1 9l7 4 7-4"/></svg>
+          <span class="sv">sophiajwitt</span><span class="sc">⌄</span>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="lbl">Repository</div>
+        <div class="sel">
+          <svg class="si" viewBox="0 0 16 16"><rect x="3" y="1" width="10" height="14" rx="1"/><path d="M6 5h4M6 8h4M6 11h2"/></svg>
+          <span class="sv">fastapi-app</span><span class="sc">⌄</span>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="lbl">Branch</div>
+        <div class="sel">
+          <svg class="si" viewBox="0 0 16 16"><circle cx="5" cy="3" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="6" r="1.5"/><path d="M5 4.5v7M5 4.5c3 0 6 1.5 6 1.5"/></svg>
+          <span class="sv">main</span><span class="sc">⌄</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="hr">
+
+    <!-- DETECT ANIMATION -->
+    <svg class="detect-grid" id="detectSvg" viewBox="0 0 50 50" width="50" height="50" style="display:block;margin-bottom:18px;" aria-hidden="true">
+      <path data-r="0" data-c="1" d="M10,0v10h10V0h-10ZM16.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="0" data-c="2" d="M20,0v10h10V0h-10ZM26.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="0" data-c="3" d="M30,0v10h10V0h-10ZM36.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="1" data-c="0" d="M0,10v10h10v-10H0ZM6.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="1" data-c="1" d="M10,10v10h10v-10h-10ZM16.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="1" data-c="2" d="M20,10v10h10v-10h-10ZM26.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="1" data-c="3" d="M30,10v10h10v-10h-10ZM36.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="1" data-c="4" d="M40,10v10h10v-10h-10ZM46.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="2" data-c="0" d="M0,20v10h10v-10H0ZM6.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="2" data-c="1" d="M10,20v10h10v-10h-10ZM16.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="2" data-c="2" d="M20,20v10h10v-10h-10ZM26.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="2" data-c="3" d="M30,20v10h10v-10h-10ZM36.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="2" data-c="4" d="M40,20v10h10v-10h-10ZM46.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="3" data-c="0" d="M0,30v10h10v-10H0ZM6.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="3" data-c="1" d="M10,30v10h10v-10h-10ZM16.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="3" data-c="2" d="M20,30v10h10v-10h-10ZM26.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="3" data-c="3" d="M30,30v10h10v-10h-10ZM36.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="3" data-c="4" d="M40,30v10h10v-10h-10ZM46.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="4" data-c="1" d="M10,40v10h10v-10h-10ZM16.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="4" data-c="2" d="M20,40v10h10v-10h-10ZM26.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+      <path data-r="4" data-c="3" d="M30,40v10h10v-10h-10ZM36.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+    </svg>
+
+    <div class="sec-title">Configure applications</div>
+    <div class="sec-sub">Specify one or more applications to deploy from the selected source.</div>
+
+    <div class="banner">
+      <svg class="bico" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5.5v4M8 11v.4"/></svg>
+      <div class="btxt">
+        We auto-detected 2 applications, their build methods, and created corresponding web services.
+        <span class="blnk">To start afresh, delete all ›</span>
+      </div>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top">
+          <div class="bdg bdg-f">F</div>
+          <span class="aname">fastapi-backend</span>
+          <div class="tag" style="margin-left:7px;"><svg class="ti" viewBox="0 0 16 16"><path d="M8 1L1 5l7 4 7-4-7-4z"/></svg>./</div>
+          <div class="rdy">
+            <svg style="width:12px;height:12px;fill:none;stroke:var(--yellow);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 16 16"><path d="M2 8l4 4 8-8"/></svg>
+            Ready
+          </div>
+          <div class="abtns">
+            <div class="ab"><svg style="width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg></div>
+            <div class="ab">✕</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="af"><div class="afl">Start command</div><div class="afv">uvicorn main:app --host 0.0.0.0 --port 8000</div></div>
+          <div class="af"><div class="afl">Port</div><div class="afv">8000</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="bdg bdg-n">N</div>
+          <span class="aname">nextjs-frontend</span>
+          <div class="tag" style="margin-left:7px;"><svg class="ti" viewBox="0 0 16 16"><path d="M8 1L1 5l7 4 7-4-7-4z"/></svg>./frontend</div>
+          <div class="rdy">
+            <svg style="width:12px;height:12px;fill:none;stroke:var(--yellow);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 16 16"><path d="M2 8l4 4 8-8"/></svg>
+            Ready
+          </div>
+          <div class="abtns">
+            <div class="ab"><svg style="width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg></div>
+            <div class="ab">✕</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="af"><div class="afl">Start command</div><div class="afv">npm start</div></div>
+          <div class="af"><div class="afl">Port</div><div class="afv">3000</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="addapp"><span style="font-size:16px;line-height:1;">+</span> Add application</div>
+
+    <!-- Yellow = Porter's one accent on the primary action -->
+    <div class="btn-yellow">Deploy 2 applications</div>
+
+    <!-- Deployment section -->
+    <div class="dsec">
+      <div class="dpanel">
+
+        <!-- Title + subtitle inside the dark panel -->
+        <div style="padding: 20px 20px 0;">
+          <div class="dtitle">Deployment</div>
+          <div class="dsub" style="margin-bottom:0;">Once you're ready, start deploying to see the progress here.</div>
+        </div>
+
+        <!-- Deploy animation — centered in panel -->
+        <div class="deploy-center">
+          <svg class="deploy-grid" id="deploySvg" viewBox="0 0 60 60" aria-hidden="true">
+            <path data-r="0" data-c="0" d="M0,0v10h10V0H0ZM6.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="0" data-c="1" d="M10,0v10h10V0h-10ZM16.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="0" data-c="2" d="M20,0v10h10V0h-10ZM26.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="0" data-c="3" d="M30,0v10h10V0h-10ZM36.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="0" data-c="4" d="M40,0v10h10V0h-10ZM46.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="0" data-c="5" d="M50,0v10h10V0h-10ZM56.25,6.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="1" data-c="0" d="M0,10v10h10v-10H0ZM6.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="1" data-c="1" d="M10,10v10h10v-10h-10ZM16.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="1" data-c="2" d="M20,10v10h10v-10h-10ZM26.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="1" data-c="3" d="M30,10v10h10v-10h-10ZM36.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="1" data-c="4" d="M40,10v10h10v-10h-10ZM46.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="1" data-c="5" d="M50,10v10h10v-10h-10ZM56.25,16.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="2" data-c="0" d="M0,20v10h10v-10H0ZM6.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="2" data-c="1" d="M10,20v10h10v-10h-10ZM16.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="2" data-c="2" d="M20,20v10h10v-10h-10ZM26.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="2" data-c="3" d="M30,20v10h10v-10h-10ZM36.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="2" data-c="4" d="M40,20v10h10v-10h-10ZM46.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="2" data-c="5" d="M50,20v10h10v-10h-10ZM56.25,26.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="3" data-c="0" d="M0,30v10h10v-10H0ZM6.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="3" data-c="1" d="M10,30v10h10v-10h-10ZM16.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="3" data-c="2" d="M20,30v10h10v-10h-10ZM26.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="3" data-c="3" d="M30,30v10h10v-10h-10ZM36.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="3" data-c="4" d="M40,30v10h10v-10h-10ZM46.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="3" data-c="5" d="M50,30v10h10v-10h-10ZM56.25,36.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="4" data-c="0" d="M0,40v10h10v-10H0ZM6.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="4" data-c="1" d="M10,40v10h10v-10h-10ZM16.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="4" data-c="2" d="M20,40v10h10v-10h-10ZM26.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="4" data-c="3" d="M30,40v10h10v-10h-10ZM36.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="4" data-c="4" d="M40,40v10h10v-10h-10ZM46.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="4" data-c="5" d="M50,40v10h10v-10h-10ZM56.25,46.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="5" data-c="0" d="M0,50v10h10v-10H0ZM6.25,56.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="5" data-c="1" d="M10,50v10h10v-10h-10ZM16.25,56.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="5" data-c="2" d="M20,50v10h10v-10h-10ZM26.25,56.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="5" data-c="3" d="M30,50v10h10v-10h-10ZM36.25,56.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="5" data-c="4" d="M40,50v10h10v-10h-10ZM46.25,56.25h-2.5v-2.5h2.5v2.5Z"/>
+            <path data-r="5" data-c="5" d="M50,50v10h10v-10h-10ZM56.25,56.25h-2.5v-2.5h2.5v2.5Z"/>
+          </svg>
+        </div>
+
+        <!-- Log output -->
+        <div class="log">
+          <div class="logr">
+            <span class="logt">12:04:01</span>
+            <span class="logb">info</span>
+            <span class="logm">Connecting to GitHub · platos-cave@master</span>
+          </div>
+          <div class="logr">
+            <span class="logt">12:04:02</span>
+            <span class="logb">info</span>
+            <span class="logm">Scanning repository for services<span class="cur"></span></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  const svg = document.getElementById('detectSvg');
+  if (!svg) return;
+  const cells = [...svg.querySelectorAll('path')];
+  let activeFlash = new Set(), timer = null, running = true;
+
+  function render() {
+    cells.forEach((cell, i) => {
+      cell.classList.remove('flash', 'on');
+      if (activeFlash.has(i)) cell.classList.add('flash');
+    });
+  }
+
+  function tick() {
+    if (!running) return;
+    activeFlash.clear();
+    const flashCount = 2 + Math.floor(Math.random() * 5);
+    const used = new Set();
+    while (used.size < flashCount) used.add(Math.floor(Math.random() * cells.length));
+    used.forEach(i => activeFlash.add(i));
+    render();
+    timer = setTimeout(tick, 70 + Math.random() * 120);
+  }
+
+  tick();
+})();
+</script>
+<script>
+(function() {
+  const svg = document.getElementById('deploySvg');
+  if (!svg) return;
+  const cells = [...svg.querySelectorAll('path')];
+  const size = 6;
+  const cellMap = new Map();
+  cells.forEach(cell => {
+    const r = Number(cell.dataset.r), c = Number(cell.dataset.c);
+    cellMap.set(r + '-' + c, cell);
+  });
+
+  function render(shape) {
+    cells.forEach(cell => cell.classList.remove('on'));
+    shape.forEach(([r, c]) => {
+      const cell = cellMap.get(r + '-' + c);
+      if (cell) cell.classList.add('on');
+    });
+  }
+
+  function getNeighbors(r, c) {
+    return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]
+      .filter(([nr,nc]) => nr>=0 && nr<size && nc>=0 && nc<size);
+  }
+
+  function generateShape() {
+    const target = 6 + Math.floor(Math.random() * 7);
+    const shape = [], used = new Set(), frontier = [];
+    const startCol = Math.floor(Math.random() * size);
+    shape.push([size-1, startCol]);
+    used.add((size-1) + '-' + startCol);
+    frontier.push([size-1, startCol]);
+    while (shape.length < target && frontier.length) {
+      const [r,c] = frontier[Math.floor(Math.random() * frontier.length)];
+      const options = getNeighbors(r,c)
+        .filter(([nr,nc]) => !used.has(nr+'-'+nc))
+        .filter(([nr]) => nr <= r || Math.random() > 0.35);
+      if (!options.length) { frontier.splice(frontier.findIndex(([fr,fc])=>fr===r&&fc===c),1); continue; }
+      const [nr,nc] = options[Math.floor(Math.random()*options.length)];
+      shape.push([nr,nc]); used.add(nr+'-'+nc); frontier.push([nr,nc]);
+    }
+    return shape.sort((a,b) => a[0]!==b[0] ? b[0]-a[0] : a[1]-b[1]);
+  }
+
+  function runCycle() {
+    const shape = generateShape();
+    const built = [];
+    let i = 0;
+    render([]);
+    function next() {
+      if (i >= shape.length) { setTimeout(runCycle, 1100); return; }
+      built.push(shape[i++]);
+      render(built);
+      setTimeout(next, 120);
+    }
+    setTimeout(next, 120);
+  }
+
+  runCycle();
+})();
+</script>
+</body>
+</html>
